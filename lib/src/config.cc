@@ -4,6 +4,7 @@
 #include <hocon/config_exception.hpp>
 #include <internal/default_transformer.hpp>
 #include <internal/resolve_context.hpp>
+#include <internal/config_util.hpp>
 #include <internal/values/config_boolean.hpp>
 #include <internal/values/config_null.hpp>
 #include <internal/values/config_number.hpp>
@@ -29,13 +30,27 @@ using namespace std;
 
 namespace hocon {
 
-    shared_config config::parse_file_any_syntax(std::string file_basename, config_parse_options options) {
+    shared_config config::parse_file_any_syntax(std::string file_basename, config_parse_options options, shared_full_current fpath) {
+        std::string file_dir(""), file_name("");
+        if (nullptr == fpath) {
+            fpath = make_shared<full_path_operator>();
+        }
+        extract_filename_from_path(file_basename, &file_dir, &file_name);
+        if (file_name.empty()) {
+            throw config_exception(_("can not find file '{1}' in Dir '{2}'", file_name, file_dir));
+        }
+
         auto source = make_shared<file_name_source>();
-        return simple_includer::from_basename(move(source), move(file_basename), move(options))->to_config();
+        fpath->append(file_dir);
+        auto ret = simple_includer::from_basename(move(source), fpath->extend(file_name), move(options), fpath)->to_config();
+        if (fpath->remove(file_dir)) {
+            throw config_exception(_("removing file dir error"));
+        }
+        return ret;
     }
 
     shared_config config::parse_file_any_syntax(std::string file_basename) {
-        return parse_file_any_syntax(move(file_basename), config_parse_options::defaults());
+        return parse_file_any_syntax(move(file_basename), config_parse_options::defaults(), nullptr);
     }
 
     shared_config config::parse_string(string s, config_parse_options options)

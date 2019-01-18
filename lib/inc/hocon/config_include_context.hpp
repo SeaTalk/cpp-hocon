@@ -20,6 +20,9 @@ namespace hocon {
      */
     class LIBCPP_HOCON_EXPORT config_include_context {
     public:
+        config_include_context() : _fpath(nullptr) {}
+        config_include_context(shared_full_current fpath) : _fpath(fpath) {}
+
         /**
          * Tries to find a name relative to whatever is doing the including, for
          * example in the same directory as the file doing the including. Returns
@@ -46,6 +49,9 @@ namespace hocon {
          * @return the parse options
          */
         virtual config_parse_options parse_options() const = 0;
+
+    public:
+        shared_full_current _fpath;
     };
 
 }  // namespace hocon

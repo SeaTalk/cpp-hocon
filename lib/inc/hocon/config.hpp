@@ -12,6 +12,7 @@
 #include <vector>
 #include <string>
 #include <set>
+#include <memory>
 #include "export.h"
 #include <leatherman/locale/locale.hpp>
 
@@ -208,7 +209,7 @@ namespace hocon {
          *            parse options
          * @return the parsed configuration
          */
-        static shared_config parse_file_any_syntax(std::string file_basename, config_parse_options options);
+        static shared_config parse_file_any_syntax(std::string file_basename, config_parse_options options, shared_full_current fpath);
 
         /**
          * Like {@link #parseFileAnySyntax(File,ConfigParseOptions)} but always uses
