@@ -116,6 +116,26 @@ namespace hocon {
         return typeid(*this).name();
     }
 
+    void parseable::set_cur_dir(std::string dir) const {
+        _include_context->set_cur_dir(move(dir));
+    }
+
+    std::string parseable::get_cur_dir() const {
+        return _include_context->get_cur_dir();
+    }
+
+    void parseable::separate_filepath(const std::string& path, std::string* file_dir, std::string* file_name) const {
+        char sep = '/';
+        size_t i = path.rfind(sep, path.length());
+        if (std::string::npos != i) {
+            file_dir->assign(path.substr(0, i + 1));
+            file_name->assign(path.substr(i + 1, path.length() - i));
+        } else {
+            file_dir->assign("");
+            file_name->assign(path);
+        }
+    }
+
     shared_ptr<config_document> parseable::parse_config_document() {
         return parse_document(_initial_options);
     }
@@ -271,6 +291,9 @@ namespace hocon {
     parseable_file::parseable_file(std::string input_file_path, config_parse_options options) :
         _input(move(input_file_path)) {
         post_construct(options);
+        std::string dir, file_name;
+        separate_filepath(_input, &dir, &file_name);
+        set_cur_dir(move(dir));
     }
 
     unique_ptr<istream> parseable_file::reader() const {

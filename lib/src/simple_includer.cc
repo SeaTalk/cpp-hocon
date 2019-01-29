@@ -58,7 +58,13 @@ namespace hocon {
     }
 
     shared_object simple_includer::include_file_without_fallback(shared_include_context context, std::string what) {
-        return config::parse_file_any_syntax(move(what), context->parse_options())->resolve(config_resolve_options(true, true))->root();
+        std::string file_path;
+        if (!what.empty() && '/' == what[0]) {
+            file_path.assign(what);
+        } else {
+            file_path = context->get_cur_dir() + what;
+        }
+        return config::parse_file_any_syntax(move(file_path), context->parse_options())->resolve(config_resolve_options(true, true))->root();
     }
 
     config_parse_options simple_includer::clear_for_include(config_parse_options const& options) {
